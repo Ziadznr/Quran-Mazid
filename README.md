@@ -1,4 +1,4 @@
 # Quran-Mazid
 
-https://quran-mazid-nt4x.vercel.app/
+[Live Link](https://quran-mazid-rosy.vercel.app/1)
 
