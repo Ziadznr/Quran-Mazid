@@ -1,18 +1,41 @@
 import { notFound } from "next/navigation";
 import QuranReader from "@/components/QuranReader";
-import { getPageCount, getQuranPage, getSearchIndex, getSurahSummaries } from "@/lib/quran";
+import {
+  getPageCount,
+  getQuranPage,
+  getSearchIndex,
+  getSurahSummaries,
+} from "@/lib/quran";
 
 type QuranPageProps = {
   params: Promise<{ page: string }>;
 };
 
-export function generateStaticParams() {
-  return Array.from({ length: getPageCount() }, (_, index) => ({ page: String(index + 1) }));
-}
+// IMPORTANT:
+// Do NOT statically generate all 1251 pages.
+// This prevents huge Vercel output size.
+export const dynamicParams = true;
 
-export async function generateMetadata({ params }: QuranPageProps) {
+// Optional ISR caching
+export const revalidate = 86400;
+
+export async function generateMetadata({
+  params,
+}: QuranPageProps) {
   const resolvedParams = await params;
-  const page = getQuranPage(Number(resolvedParams.page));
+  const pageNumber = Number(resolvedParams.page);
+
+  if (
+    !Number.isInteger(pageNumber) ||
+    pageNumber < 1 ||
+    pageNumber > getPageCount()
+  ) {
+    return {
+      title: "Page Not Found",
+    };
+  }
+
+  const page = getQuranPage(pageNumber);
 
   return {
     title: `${page.title} - Quran Reader`,
@@ -20,11 +43,17 @@ export async function generateMetadata({ params }: QuranPageProps) {
   };
 }
 
-export default async function PageReader({ params }: QuranPageProps) {
+export default async function PageReader({
+  params,
+}: QuranPageProps) {
   const resolvedParams = await params;
   const pageNumber = Number(resolvedParams.page);
 
-  if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > getPageCount()) {
+  if (
+    !Number.isInteger(pageNumber) ||
+    pageNumber < 1 ||
+    pageNumber > getPageCount()
+  ) {
     notFound();
   }
 
