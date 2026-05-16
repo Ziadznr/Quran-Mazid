@@ -70,6 +70,12 @@ export default function QuranReader({
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
   useEffect(() => {
     const saved = window.localStorage.getItem("quran-reader-settings");
     if (saved) setSettings({ ...defaultSettings, ...JSON.parse(saved) });
@@ -136,7 +142,7 @@ export default function QuranReader({
 
   const readingVerses: PageVerse[] =
     pageData?.verses ??
-    currentSurah?.verses.map((verse) => ({
+    currentSurah?.verses?.map((verse) => ({
       ...verse,
       surahId: currentSurah.id,
       surahName: currentSurah.name,
@@ -145,7 +151,10 @@ export default function QuranReader({
     })) ??
     [];
 
-  const activeSurahId = currentSurah?.id ?? pageData?.verses[0]?.surahId ?? 1;
+  const activeSurahId =
+  currentSurah?.id ??
+  pageData?.verses?.[0]?.surahId ??
+  1;
   const activeSidebarPage = pageData?.page ?? (currentSurah ? getPageForAyah(currentSurah.id, 1) : 1);
   const initialSidebarMode: SidebarMode = pageData ? "page" : "surah";
   const totalPages = getPageCount();
@@ -183,7 +192,11 @@ export default function QuranReader({
   return (
     <main className={`reader-shell min-h-screen ${themeClass(theme)}`}>
       <div className="flex min-h-screen">
-        <IconRail onMenu={() => setDrawerOpen(true)} onSearchFocus={() => window.dispatchEvent(new Event("open-quran-search"))} />
+        <IconRail onMenu={() => setDrawerOpen(true)} onSearchFocus={() => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("open-quran-search"));
+  }
+}} />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopNav query={query} results={results} onQueryChange={setQuery} onSettings={() => setSettingsOpen(true)} theme={theme} onTheme={setTheme} onMenu={() => { setDrawerOpen(true); setSheetHeight(window.innerHeight * 0.7); }} visible={showNavbars} />
           <div className="flex min-h-0 flex-1">
@@ -885,10 +898,44 @@ function Slider({ label, value, min, max, onChange }: { label: string; value: nu
 
 function AyahActions({ verse, isOpen, onToggle, onClose }: { verse: PageVerse; isOpen: boolean; onToggle: () => void; onClose: () => void }) {
   const ayahText = `${verse.surahId}:${verse.id} ${verse.text}\n${verse.translation}`;
-  const ayahUrl = typeof window === "undefined" ? "" : `${window.location.origin}/${verse.surahId}#ayah-${verse.id}`;
-  async function copyAyah() { await navigator.clipboard.writeText(ayahText); onClose(); }
-  async function copyLink() { await navigator.clipboard.writeText(ayahUrl); onClose(); }
-  async function shareAyah() { if (navigator.share) await navigator.share({ title: `Ayah ${verse.surahId}:${verse.id}`, text: ayahText, url: ayahUrl }); else await navigator.clipboard.writeText(`${ayahText}\n${ayahUrl}`); onClose(); }
+  const [ayahUrl, setAyahUrl] = useState("");
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    setAyahUrl(
+      `${window.location.origin}/${verse.surahId}#ayah-${verse.id}`
+    );
+  }
+}, [verse.surahId, verse.id]);
+  async function copyAyah() {
+  if (navigator?.clipboard) {
+    await navigator.clipboard.writeText(ayahText);
+  }
+  onClose();
+}
+
+async function copyLink() {
+  if (navigator?.clipboard) {
+    await navigator.clipboard.writeText(ayahUrl);
+  }
+  onClose();
+}
+
+async function shareAyah() {
+  if (navigator?.share) {
+    await navigator.share({
+      title: `Ayah ${verse.surahId}:${verse.id}`,
+      text: ayahText,
+      url: ayahUrl,
+    });
+  } else if (navigator?.clipboard) {
+    await navigator.clipboard.writeText(
+      `${ayahText}\n${ayahUrl}`
+    );
+  }
+
+  onClose();
+}
   return <div className="relative"><button className="reader-control" aria-label="More actions" onClick={onToggle}><MoreHorizontal size={18} /></button>{isOpen && <><button className="fixed inset-0 z-40 cursor-default" aria-label="Close ayah actions" onClick={onClose} /><div className="ayah-action-menu"><button onClick={copyAyah}><Copy size={18} /><span>Ayah Copy</span></button><button onClick={copyLink}><LinkIcon size={18} /><span>Copy Link</span></button><button onClick={shareAyah}><Share2 size={18} /><span>Ayah Share</span></button></div></>}</div>;
 }
 
