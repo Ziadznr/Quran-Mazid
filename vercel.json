@@ -2,10 +2,6 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "framework": "nextjs",
-  "nodeVersion": "20.x",
-  "env": {
-    "NEXT_PUBLIC_VERCEL_URL": "@vercel/url"
-  },
   "rewrites": [
     {
       "source": "/",
