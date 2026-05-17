@@ -1,22 +1,5 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, must-revalidate"
-        }
-      ]
-    }
-  ]
+  "framework": "nextjs"
 }
