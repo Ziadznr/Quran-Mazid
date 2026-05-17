@@ -192,13 +192,13 @@ useEffect(() => {
   return (
     <main className={`reader-shell min-h-screen ${themeClass(theme)}`}>
       <div className="flex min-h-screen">
-        <IconRail onMenu={() => setDrawerOpen(true)} onSearchFocus={() => {
+        <IconRail onMenu={() => { setDrawerOpen(true); setSheetHeight(window.innerHeight); }} onSearchFocus={() => {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("open-quran-search"));
   }
 }} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopNav query={query} results={results} onQueryChange={setQuery} onSettings={() => setSettingsOpen(true)} theme={theme} onTheme={setTheme} onMenu={() => { setDrawerOpen(true); setSheetHeight(window.innerHeight * 0.7); }} visible={showNavbars} />
+          <TopNav query={query} results={results} onQueryChange={setQuery} onSettings={() => setSettingsOpen(true)} theme={theme} onTheme={setTheme} onMenu={() => { setDrawerOpen(true); setSheetHeight(window.innerHeight); }} visible={showNavbars} />
           <div className="flex min-h-0 flex-1">
             <aside className="hidden h-[calc(100vh-65px)] w-[300px] shrink-0 border-r border-line bg-panel lg:block">
               <ReferenceList surahs={surahs} currentId={activeSurahId} activePage={activeSidebarPage} initialMode={initialSidebarMode} />

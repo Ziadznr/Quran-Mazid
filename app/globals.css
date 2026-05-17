@@ -546,6 +546,12 @@ body {
   background: var(--hover);
 }
 
+/* Make the diamond number appear selected on hover for unselected items */
+.sidebar-card:hover .surah-diamond {
+  background-color: var(--green);
+  color: white;
+}
+
 .sidebar-card.is-active {
   border-color: color-mix(in srgb, var(--green) 35%, transparent);
   background: var(--selected);
